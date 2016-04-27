@@ -1,9 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>O, tempora</title>
     <style>
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+            -webkit-touch-callout: none; /* iOS Safari */
+            -webkit-user-select: none;   /* Chrome/Safari/Opera */
+            -khtml-user-select: none;    /* Konqueror */
+            -moz-user-select: none;      /* Firefox */
+            -ms-user-select: none;       /* Internet Explorer/Edge */
+            user-select: none;           /* Non-prefixed version, currently
+                                            not supported by any browser */
+        }
         html { height: 100%; }
         body {
             color: #333;
@@ -42,30 +52,26 @@
             margin: 20px 0;
         }
         .timer-inner {
+            cursor: pointer;
             border: 1px solid transparent;
             display: inline-block;
-            padding: 5px 20px;
+            padding: 10px 20px 15px;
         }
         .elapsed-time {
             font-size: 60px;
             line-height: 1;
-        }
-        .timer-controls {
-            margin: 10px;
         }
 
         .active > .timer-inner {
             border-color: #333333;
         }
         body.fun {
-            background: #333333;
+            background: #000000;
             color: #eeeeee;
         }
         body.fun .active > .timer-inner {
             border-color: #eeeeee;
         }
-
-
 
         @media (max-width: 480px) {
             .timer-wrap {
