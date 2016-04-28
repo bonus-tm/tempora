@@ -42,6 +42,30 @@ class Tempora
                       </div>"""
             document.body.insertAdjacentHTML 'beforeend', html
 
+# перерисовка всех таймеров и обновление их значений
+    redraw_timers: =>
+        console.log 'redraw_timers'
+        for timer, i in @data.timers
+            el = document.getElementById timer.id
+            el.querySelectorAll('.elapsed-time').item(0).textContent = @format_time timer.elapsed_seconds
+            unless i is @data.active_timer
+                document.body.classList.remove timer.id
+                el.classList.remove 'active'
+
+        if @data.active_timer
+            document.body.classList.add @data.timers[@data.active_timer].id
+            el = document.getElementById @data.timers[@data.active_timer].id
+            el.classList.add 'active'
+            document.getElementById('stop').disabled = false
+        else
+            document.getElementById('stop').disabled = true
+
+# форматирование времени
+    format_time: (seconds) ->
+        hours = Math.floor seconds / 3600
+        minutes = Math.floor (seconds % 3600) / 60
+        return "#{if hours < 10 then '0' + hours else hours}:#{if minutes < 10 then '0' + minutes else minutes}"
+
 # клик на кнопке таймера
     onclick: (e) =>
         if e.target.tagName is 'BUTTON'
@@ -70,45 +94,6 @@ class Tempora
         do @update_elapsed_time
         do @set_interval
 
-# перерисовка всех таймеров и обновление их значений
-    redraw_timers: =>
-        console.log 'redraw_timers'
-        for timer, i in @data.timers
-            el = document.getElementById timer.id
-            el.querySelectorAll('.elapsed-time').item(0).textContent = @format_time timer.elapsed_seconds
-            unless i is @data.active_timer
-                document.body.classList.remove timer.id
-                el.classList.remove 'active'
-
-        if @data.active_timer
-            document.body.classList.add @data.timers[@data.active_timer].id
-            el = document.getElementById @data.timers[@data.active_timer].id
-            el.classList.add 'active'
-            document.getElementById('stop').disabled = false
-        else
-            document.getElementById('stop').disabled = true
-
-# форматирование времени
-    format_time: (seconds) ->
-        hours = Math.floor seconds / 3600
-        minutes = Math.floor (seconds % 3600) / 60
-        return "#{if hours < 10 then '0' + hours else hours}:#{if minutes < 10 then '0' + minutes else minutes}"
-
-# включение ежеминутного таймера
-    set_interval: =>
-        clearInterval @interval if @interval
-        @interval = setInterval =>
-            do @update_elapsed_time
-        , 30 * 1000
-
-# обновление значения активного таймера
-    update_elapsed_time: =>
-        t = @data.timers[@data.active_timer]
-        t.elapsed_seconds += Math.round (Date.now() - t.timestamp) / 1000
-        t.timestamp = Date.now()
-        do @save_data
-        do @redraw_timers
-
 # остановка всех таймеров
     timers_stop: =>
         console.log 'timers_stop'
@@ -127,8 +112,22 @@ class Tempora
         do @save_data
         do @redraw_timers
 
+# обновление значения активного таймера
+    update_elapsed_time: =>
+        t = @data.timers[@data.active_timer]
+        t.elapsed_seconds += Math.round (Date.now() - t.timestamp) / 1000
+        t.timestamp = Date.now()
+        do @save_data
+        do @redraw_timers
+
+# включение ежеминутного таймера
+    set_interval: =>
+        clearInterval @interval if @interval
+        @interval = setInterval =>
+            do @update_elapsed_time
+        , 30 * 1000
+
 # сохранение изменённых данных
     save_data: =>
         console.log 'save_data'
         localStorage.tempora = JSON.stringify @data
-        

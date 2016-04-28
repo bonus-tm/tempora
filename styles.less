@@ -1,0 +1,78 @@
+* {
+    box-sizing: border-box;
+    user-select: none;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    color: #333;
+    padding: 10px 0 0;
+    margin: 0;
+    font: normal 16px/24px "Helvetica Neue", Helvetica, Tahoma, sans-serif;
+    height: 100%;
+
+    &.fun {
+        background: #000000;
+        color: #eeeeee;
+
+        .active > .timer-inner {
+            border-color: #eeeeee;
+        }
+    }
+}
+
+h2 {
+    margin: 5px 0 10px;
+}
+
+button {
+    border: none;
+    background: silver;
+    font: normal 16px/24px "Helvetica Neue", Helvetica, Tahoma, sans-serif;
+    cursor: pointer;
+    padding: 4px 20px;
+    border-radius: 3px;
+
+    &:disabled {
+        cursor: not-allowed;
+    }
+}
+
+#controls {
+    text-align: center;
+}
+
+.timer-wrap {
+    opacity: 0.5;
+    display: inline-block;
+    text-align: center;
+    margin: 20px 0;
+    width: 50%;
+
+    @media (max-width: 480px) {
+        width: 100%;
+    }
+
+    &.active {
+        opacity: 1;
+
+        & > .timer-inner {
+            border-color: #333333;
+        }
+    }
+
+    .timer-inner {
+        cursor: pointer;
+        border: 1px solid transparent;
+        display: inline-block;
+        padding: 10px 20px 15px;
+    }
+
+    .elapsed-time {
+        font-size: 60px;
+        line-height: 1;
+    }
+}
