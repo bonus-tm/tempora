@@ -10,12 +10,12 @@ closest = (el, fn) ->
 class Tempora
     @default:
         active_timer: null
-        active_timer_before_stop: null
         timers: [
-            {id: 'work', name: 'Делу время', minutes_elapsed: 0, started_timestamp: 0}
-            {id: 'fun', name: 'Потехе час', minutes_elapsed: 0, started_timestamp: 0}
+            {id: 'work', name: 'Делу время', elapsed_seconds: 0, timestamp: 0}
+            {id: 'fun', name: 'Потехе час', elapsed_seconds: 0, timestamp: 0}
         ]
 
+# конструктор класса
     constructor: ->
         @data = if localStorage.tempora?
             JSON.parse localStorage.tempora
@@ -27,7 +27,7 @@ class Tempora
     start: =>
         console.log 'start'
         do @build_html
-        @timer_resume @data.active_timer if @data.active_timer
+        do @timer_resume if @data.active_timer
         document.addEventListener 'click', @onclick
 
 # вёрстка
@@ -37,7 +37,7 @@ class Tempora
             html = """<div class="timer-wrap" id="#{timer.id}">
                         <div class="timer-inner" data-i="#{i}">
                             <h2>#{timer.name}</h2>
-                            <span class="elapsed-time">#{@format_time timer.minutes_elapsed}</span>
+                            <span class="elapsed-time">#{@format_time timer.elapsed_seconds}</span>
                         </div>
                       </div>"""
             document.body.insertAdjacentHTML 'beforeend', html
@@ -48,7 +48,7 @@ class Tempora
             if e.target.classList.contains 'reset'
                 do @reset
             if e.target.classList.contains 'stop'
-                do @stop
+                do @timers_stop
         else
             inner = closest e.target, (el) ->
                 return el.classList?.contains 'timer-inner'
@@ -60,16 +60,14 @@ class Tempora
         console.log 'timer_go', i
         unless @data.active_timer is i
             @data.active_timer = i
-            @data.timers[i].started_timestamp = Date.now()
-            @data.active_timer_before_stop = null
-            do @save_data
-            do @redraw_timers
+            @data.timers[i].timestamp = Date.now()
+            do @update_elapsed_time
             do @set_interval
 
 # восстановление и запуск ранее запущенного таймера при загрузке
-    timer_resume: (i) =>
-        console.log 'timer_resume', i
-        @update_elapsed_time i
+    timer_resume: =>
+        console.log 'timer_resume'
+        do @update_elapsed_time
         do @set_interval
 
 # перерисовка всех таймеров и обновление их значений
@@ -77,7 +75,7 @@ class Tempora
         console.log 'redraw_timers'
         for timer, i in @data.timers
             el = document.getElementById timer.id
-            el.querySelectorAll('.elapsed-time').item(0).textContent = @format_time timer.minutes_elapsed
+            el.querySelectorAll('.elapsed-time').item(0).textContent = @format_time timer.elapsed_seconds
             unless i is @data.active_timer
                 document.body.classList.remove timer.id
                 el.classList.remove 'active'
@@ -91,30 +89,32 @@ class Tempora
             document.getElementById('stop').disabled = true
 
 # форматирование времени
-    format_time: (minutes) ->
-        hours = Math.floor minutes / 60
-        mins = minutes %% 60
-        return "#{if hours < 10 then '0' + hours else hours}:#{if mins < 10 then '0' + mins else mins}"
+    format_time: (seconds) ->
+        hours = Math.floor seconds / 3600
+        minutes = Math.floor (seconds % 3600) / 60
+        return "#{if hours < 10 then '0' + hours else hours}:#{if minutes < 10 then '0' + minutes else minutes}"
 
 # включение ежеминутного таймера
     set_interval: =>
         clearInterval @interval if @interval
         @interval = setInterval =>
-            @update_elapsed_time @data.active_timer
-        , 60 * 1000
+            do @update_elapsed_time
+        , 30 * 1000
 
 # обновление значения активного таймера
-    update_elapsed_time: (i) =>
-        seconds_elapsed = Math.round (Date.now() - @data.timers[i].started_timestamp) / 1000
-        @data.timers[i].minutes_elapsed = Math.ceil seconds_elapsed / 60
+    update_elapsed_time: =>
+        t = @data.timers[@data.active_timer]
+        t.elapsed_seconds += Math.round (Date.now() - t.timestamp) / 1000
+        t.timestamp = Date.now()
         do @save_data
         do @redraw_timers
 
 # остановка всех таймеров
-    stop: =>
-        console.log 'stop'
+    timers_stop: =>
+        console.log 'timers_stop'
         clearInterval @interval if @interval
-        @data.active_timer_before_stop = @data.active_timer
+        do @update_elapsed_time
+        @data.timers[@data.active_timer].timestamp = 0
         @data.active_timer = null
         do @save_data
         do @redraw_timers
