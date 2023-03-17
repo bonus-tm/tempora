@@ -1,2 +1,3 @@
-# tempora
-Two alterable time trackers
+# O, tempora
+
+Two alterable time trackers.
